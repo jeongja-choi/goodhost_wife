@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>3천원 레시피 플랫폼 · 1장 설계 기획서</title>
+  <style>
+    :root {
+      --bg: #f7f8fa;
+      --fg: #0f172a;
+      --muted: #64748b;
+      --accent: #10b981;
+      --card: #ffffff;
+      --border: #e5e7eb;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; background: var(--bg); color: var(--fg);
+      font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Noto Sans, Apple SD Gothic Neo, "Malgun Gothic", Pretendard, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+      padding: 24px;
+    }
+    .page { max-width: 980px; margin: 0 auto; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px 28px; box-shadow: 0 2px 12px rgba(15, 23, 42, .06); }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    h1 { font-size: 22px; margin: 0; }
+    .badge { font-size: 12px; color: #065f46; background: #d1fae5; border: 1px solid #a7f3d0; padding: 4px 8px; border-radius: 999px; }
+    .subtitle { color: var(--muted); margin-top: 6px; }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 16px; }
+    @media (min-width: 860px) { .grid { grid-template-columns: 1fr 1fr; } }
+    section { border: 1px solid var(--border); border-radius: 12px; padding: 14px; background: #fff; }
+    h2 { font-size: 15px; margin: 0 0 8px; }
+    ul { margin: 6px 0 0 18px; padding: 0; }
+    li { margin: 4px 0; }
+    small { color: var(--muted); }
+    .kv { display: grid; grid-template-columns: 120px 1fr; gap: 8px 14px; }
+    .kv div:nth-child(odd) { color: var(--muted); }
+    .pill { display: inline-block; padding: 4px 8px; border: 1px solid var(--border); border-radius: 999px; margin: 2px 6px 2px 0; font-size: 12px; }
+    .foot { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
+    .foot .pill { background: #f8fafc; }
+    .kpi { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .kpi > div { border: 1px dashed var(--border); border-radius: 10px; padding: 10px; text-align: center; }
+    .kpi b { font-size: 16px; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+    .warn { background: #fffbeb; border-color: #fde68a; }
+    .ok { background: #ecfeff; border-color: #a5f3fc; }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .page { border: none; box-shadow: none; border-radius: 0; }
+      .foot { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <h1>💡 저비용 3천원 레시피 공유 플랫폼 – 1장 설계 기획서</h1>
+        <div class="subtitle">목표: 1인 가구 대상 초저비용 레시피를 빠르게 작성·공유하는 모바일 우선 웹앱(MVP)</div>
+      </div>
+      <span class="badge">Streamlit + Supabase 확장형 MVP</span>
+    </header>
+
+    <div class="grid" style="margin-top:16px;">
+      <section>
+        <h2>1) 의도/핵심가치</h2>
+        <ul>
+          <li>비용 장벽 최소화(3,000원 내외) + 조리장벽 최소화(단계 단순화)</li>
+          <li>커뮤니티 축적: 사용자 생성 레시피(UGC)로 검색 가치 향상</li>
+          <li>모바일 퍼스트 UI로 현장 입력(마트/주방) 즉시성 확보</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>2) 구축환경(변경 후)</h2>
+        <div class="kv">
+          <div>프레임워크</div><div>Streamlit (Python)</div>
+          <div>데이터베이스</div><div>Supabase(PostgreSQL) + Prisma 대체: 직접 SQL</div>
+          <div>스토리지</div><div>Supabase Storage (이미지)</div>
+          <div>인증(옵션)</div><div>Supabase Auth (이메일/소셜)</div>
+          <div>배포</div><div>Streamlit Cloud + GitHub 연동</div>
+          <div>AI(옵션)</div><div>Gemini: 태그 자동화/추천(크레딧 절약형 보조)</div>
+        </div>
+      </section>
+
+      <section>
+        <h2>3) 데이터 모델 (초안)</h2>
+        <ul class="mono">
+          <li>recipes(id, title, ingredients, cost, steps, tags, image_url, created_at)</li>
+          <li>ratings(id, recipe_id, user_id, score, created_at)</li>
+          <li>comments(id, recipe_id, user_id, content, created_at, is_flagged)</li>
+        </ul>
+        <small>※ MVP는 인증 없이 시작 가능(익명 식별자 사용), 추후 Auth 연결.</small>
+      </section>
+
+      <section>
+        <h2>4) 핵심 기능 (MVP 범위)</h2>
+        <ul>
+          <li>레시피 등록: 제목/재료(가격)/단계/예상비용/태그 + 이미지 업로드</li>
+          <li>목록/검색/필터: 태그·가격(≤3,000)·최신순 정렬</li>
+          <li>상호작용: 별점(1–5), 댓글(신고/숨김), 조회수 집계</li>
+          <li>모바일 최적화: 한 화면 내 카드형 리스트 + 간결 입력</li>
+        </ul>
+      </section>
+
+      <section class="warn">
+        <h2>5) 운영·보안</h2>
+        <ul>
+          <li>권한: 공개 읽기, 쓰기 제한(레이트 리밋) → 스팸 방지</li>
+          <li>이미지: 확장자/용량 제한, Storage 공개 URL + 삭제 훅</li>
+          <li>개인정보: 로그인 미도입 시 PII 입력 금지 고지</li>
+          <li>백업: Supabase 자동 스냅샷 + CSV 내보내기(주 1회)</li>
+        </ul>
+      </section>
+
+      <section class="ok">
+        <h2>6) 개발 로드맵</h2>
+        <ul>
+          <li><b>MVP-1</b>: 레시피 CRUD + 이미지 업로드 + 최신순 목록</li>
+          <li><b>MVP-2</b>: 별점·댓글·조회수, 태그/가격 필터</li>
+          <li><b>MVP-3</b>: 인증(선택), PWA, 간단 리포트(인기 레시피)</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>7) 사용자 메리트</h2>
+        <ul>
+          <li>🕒 <b>즉시성</b>: 장보기/조리 중 바로 기록·검색</li>
+          <li>💰 <b>가성비</b>: 3천원 레시피 큐레이션으로 생활비 절감</li>
+          <li>🔎 <b>발견성</b>: 태그·가격 필터로 맞춤 탐색</li>
+          <li>🤝 <b>커뮤니티</b>: 별점·댓글로 품질 상향 평준화</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>8) 성공지표(KPI)</h2>
+        <div class="kpi">
+          <div><b>D1 Retention</b><br><small>≥ 25%</small></div>
+          <div><b>레시피/주</b><br><small>≥ 100건</small></div>
+          <div><b>3,000원 이하 비중</b><br><small>≥ 80%</small></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="foot">
+      <span class="pill">v1.0 · Streamlit/Supabase 설계</span>
+      <span class="pill">인쇄 1장 적합</span>
+      <span class="pill">모바일 퍼스트</span>
+    </div>
+  </div>
+</body>
+</html>
